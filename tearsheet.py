@@ -129,7 +129,7 @@ def create_figure(returns, title):
 
     fig['layout'].update(
         autosize=False,
-        width=700,
+        width=750,
         height=1200
     )
 

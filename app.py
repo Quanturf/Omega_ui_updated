@@ -36,122 +36,15 @@ app = dash.Dash(__name__, external_stylesheets=['static/stylesheet.css'])
 
 #app = dash.Dash(__name__)
 server = app.server
-app.title = 'Omega - Backtest'
+app.title = 'Quanturf - Backtest'
 #app.scripts.config.serve_locally = False
 
 # level_marks = ['Debug', 'Info', 'Warning', 'Error']
 level_marks = {0: 'Debug', 1: 'Info', 2: 'Warning', 3: 'Error'}
 num_marks = 4
 
-SIDEBAR_STYLE = {
-    'position': 'fixed',
-    'top': 54,
-    'left': 0,
-    'bottom': 0,
-    'width': '16rem',
-    'height': '100%',
-    'z-index': 1,
-    'overflow-x': 'hidden',
-    'transition': 'all 0.5s',
-    'padding': '0.5rem 1rem',
-    # 'background-color': SIDEBAR, 
-	# 'color': ACCENT,
-}
-
-navbar = dbc.NavbarSimple(
-    children=[
-        # dbc.DropdownMenu(
-        #     [
-        #         dbc.DropdownMenuItem(
-        #             "Top Stats", id="headline_stats_df", n_clicks=0
-        #         ),
-        #         dbc.DropdownMenuItem(
-        #             "Equity Timeseries", id="center_stock", n_clicks=0
-        #         ),
-        #         dbc.DropdownMenuItem(
-        #             "Cumulative Returns", id="cumulative_returns_plot", n_clicks=0
-        #         ),
-        #         dbc.DropdownMenuItem(
-        #             "Annual/monthly Returns", id="annual_monthly_returns_plot", n_clicks=0
-        #         ),
-        #         dbc.DropdownMenuItem(
-        #             "Rolling Sharpe", id="rolling_sharpe_plot", n_clicks=0
-        #         ),
-        #         dbc.DropdownMenuItem(
-        #             "Drawdown Underwater", id="drawdown_underwater_plot", n_clicks=0
-        #         ),
-                
-        #     ],
-        #     label="Download Data", toggle_style={"color": "white", "backgroundColor": ACCENT, "border":"0"}, style = {"margin-right": "5px"}
-        # ),
-    
-        # dcc.Download(id="download-headline-stats-csv"),
-        dcc.Download(id="download-center-stock-csv"),
-        # dcc.Download(id="download-cumulative-returns-csv"),
-        # dcc.Download(id="download-anual-monthly-returns-csv"),
-        # dcc.Download(id="download-rolling-sharpe-csv"),
-        # dcc.Download(id="download-drawdown-underwater-csv"),
-        # html.Br(),
-        dbc.Button('Download Data', id="center_stock", n_clicks=0, style = {"margin-right": "5px"}),
-        dbc.Button('See Code', id='open-modal', outline=True, className='mr-1', n_clicks=0, style = { "margin-right": "5px"}),  
-        dbc.Modal(
-            [
-                dbc.ModalHeader(dbc.ModalTitle('Python Code')),
-                dbc.ModalBody(dcc.Markdown(id='see-code-content')),
-            ],
-            id='modal-content',
-            size='lg',
-            is_open=False,
-            centered=True
-        ),
-        dbc.Button('Sidebar', outline=True, className='mr-1', id='btn_sidebar'),
-        
-    ],
-    sticky='top',
-    brand='Quanturf - backtesting',
-    id='navbar',
-    brand_href='#',
-    #color=SIDEBAR,
-    dark=True,
-    fluid=True,
-)
-
-sidebar = html.Div(
-    [
-        html.Br(),
-		
-        dbc.Nav(
-            [
-                html.Br(),
-                # dbc.DropdownMenu(label='Equities', children = [dbc.DropdownMenuItem('Visualizations', href='/equity-visuals', id='equity-visuals-link', className='nav-pills'), 
-                #                                                 dbc.DropdownMenuItem('Data', href='/backtesting', id='backtesting-link', className='nav-pills'),
-                #                                                 ]
-                #                 , menu_variant='dark', nav=True, group=True
-                # ),
-                dbc.NavLink('Home', href='/home', id='home-link', className='nav-pills'),
-                dbc.NavLink('Backtest', href='/backtest', id='backtest-link', className='nav-pills'),
-                dbc.NavLink('Contact Us', href='/contact-us', id='contact-us-link', className='nav-pills'),
-                # dbc.NavLink('Visualizations', href='/equity-visuals', id='equity-visuals-link', className='nav-pills'),
-                # dbc.NavLink('Crypto', href='/crypto', id='crypto-link', className='nav-pills'),
-                # dbc.NavLink('FX', href='/FX', id='FX-link', className='nav-pills'),
-                # dbc.NavLink('Fixed Income', href='/fixed-income', id='fixed-income-link', className='nav-pills'),
-                # dbc.NavLink('Commodities', href='/commodities', id='commodities-link', className='nav-pills'),
-                # dbc.NavLink('Sentiment', href='/sentiment', id='sentiment-link', className='nav-pills'),
-                html.Br(),
-                
-                html.Br()  
-            ],
-            vertical=True,
-            pills=True
-            
-        ),
-    ],
-    id='sidebar',
-    style=SIDEBAR_STYLE,
-)
-
 left_column = html.Div([
-    html.Div(html.H5('Data Download'), className='black-block2 mb-10'),
+    html.Div(html.H5('Data Download'), className='grey block2 mb-10'),
     html.Div([
         html.Div('Symbols:', className='four columns'),
         dcc.Dropdown(
@@ -287,7 +180,7 @@ app.layout = html.Div([
         html.Div(
                     [
                         html.Div(
-                html.Div(html.H1('Quanturf - backtrader'), className='black-block2 mb-10'),
+                html.Div(html.H1('Quanturf - backtrader'), className='gray-block2 mb-10'),
                 style={'position': 'absolute', 'right': '1em', 'width': '99%'}),
             html.Div([
                 html.Div([

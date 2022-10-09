@@ -20,11 +20,11 @@ if not os.path.exists(log_dir):
     os.makedirs( log_dir)
 
 
-# Backtest class
-btm = importlib.import_module(oc.cfg['default']['module'])
-#btm = importlib.import_module('test_backtest')
+# # Backtest class
+# btm = importlib.import_module(oc.cfg['default']['module'])
+# #btm = importlib.import_module('test_backtest')
 
-backtest = getattr(btm, oc.cfg['default']['class'])()
+# backtest = getattr(btm, oc.cfg['default']['class'])()
 
 #btm = SourceFileLoader(oc.cfg['default']['module'] ).load_module()
 
@@ -61,26 +61,26 @@ def test_list(module_name):
         return []
 
 
-def cash_param():
-    return [{'name': 'Cash', 'id': str(oc.cfg['backtest']['cash'])}]
+# def cash_param():
+#     return [{'name': 'Cash', 'id': str(oc.cfg['backtest']['cash'])}]
 
 
-def params_list(module_name, strategy_name, symbol):
-    logger = logging.getLogger(__name__)
+# def params_list(module_name, strategy_name, symbol):
+#     logger = logging.getLogger(__name__)
 
-    params = cash_param()
-    try:
-        # Get strategy
-        module = importlib.import_module(module_name)
-        importlib.reload(module)  # Always reload module in case some changes have been made to the strategies
-        strategy = getattr(module, strategy_name)
-        for key, value in backtest.get_parameters(strategy, symbol).items():
-            if isinstance(value, dict):
-                value = json.dumps(value)
-            params.append({'name': key, 'id': str(value)})
-    except Exception as e:
-        logger.log(logging.ERROR, 'Error in loading params: {}!'.format(str(e)))
-    return params
+#     params = cash_param()
+#     try:
+#         # Get strategy
+#         module = importlib.import_module(module_name)
+#         importlib.reload(module)  # Always reload module in case some changes have been made to the strategies
+#         strategy = getattr(module, strategy_name)
+#         for key, value in backtest.get_parameters(strategy, symbol).items():
+#             if isinstance(value, dict):
+#                 value = json.dumps(value)
+#             params.append({'name': key, 'id': str(value)})
+#     except Exception as e:
+#         logger.log(logging.ERROR, 'Error in loading params: {}!'.format(str(e)))
+#     return params
 
 
 def create_ts2(strategy):

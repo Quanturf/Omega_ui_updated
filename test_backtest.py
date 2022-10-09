@@ -82,7 +82,7 @@ class TestStrategy(bt.Strategy):
                 self.order_target_percent(target=-0.25)
 
 
-class ExampleBacktest(ob.Backtest):
+class RunBacktest(ob.Backtest):
     def get_symbols(self):
         return ['AAPL', 'MSFT', 'TestData']
 
