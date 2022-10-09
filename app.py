@@ -47,7 +47,7 @@ left_column = html.Div([
         dcc.Dropdown(
             id='symbols',
             #options=[{'label': name, 'value': name} for name in ob.backtest.get_symbols()],
-            options=['AAPL', 'TSLA', 'MSFT'], #Replace this with list
+            options=['AAPL', 'TSLA', 'MSFT', 'AMZN'], #Replace this with list
             multi=True,
             className='eight columns u-pull-right')
     ], className='row mb-10'),
@@ -151,15 +151,15 @@ bottom = html.Div([
 
 app.layout = html.Div([    
     html.Div(
-        html.Div(html.H1('Quanturf - backtrader'), className='gray-block2 mb-10'),
+        html.Div(html.H1('Quanturf - backtrader'), className='black-block2 mb-10'),
         style={'position': 'absolute', 'right': '1em', 'width': '99%'}),
     html.Div([
         html.Div([
             left_column, center, right_column
         ], className='row', style={'position': 'absolute', 'bottom': '18em', 'top': '7em', 'right': '1em', 'width': '99%'}),
-        html.Div(
-            bottom
-            , className='row', style={'position': 'absolute', 'bottom': '0.5em', 'right': '1em', 'width': '99%'})
+        # html.Div(
+        #     bottom
+        #     , className='row', style={'position': 'absolute', 'bottom': '0.5em', 'right': '1em', 'width': '99%'})
     ]),
     html.Div(id='intermediate-value', style={'display': 'none'}),
     html.Div(id='intermediate-params', style={'display': 'none'}),
@@ -287,7 +287,7 @@ def on_click_backtest_to_intermediate(strategy):
         if strategy is None:
             return []
         #return ob.create_ts(uid, module, strategy, symbols, params)
-        return ob.create_ts2()
+        return ob.create_ts2(strategy)
     except json.decoder.JSONDecodeError:
         # Ignoring this error (this is happening when inputting values in Module/Strategy boxes)
         return []    
@@ -363,20 +363,17 @@ def backtest():
     cash = {cash}
     symbols = {symbols}
     #start_date = '2018-01-01'
-    path_dir = 'D:\Python\OmegaUI_codeGenerator\omega_ui'  
+    data_dir = "Data/"  
 
     cerebro = bt.Cerebro()
     cerebro.broker.setcash(cash)
 
     for s in symbols:            
-            df = pd.read_csv(os.path.join(path_dir, s+".csv"), parse_dates=True, index_col=0)
+            df = pd.read_csv(os.path.join(data_dir, s+".csv"), parse_dates=True, index_col=0)
             data = bt.feeds.PandasData(dataname=df)
             cerebro.adddata(data)
-    data = bt.feeds.PandasData(dataname=yf.download('TSLA', '2018-01-01', '2018-01-10'))
-    cerebro.adddata(data)   
-
-     # Strategy
-    cerebro.addstrategy(TestStrategy)
+    # Strategy
+    cerebro.addstrategy({module})
 
 
     cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
@@ -386,7 +383,7 @@ def backtest():
     
     # Backtest 
     
-    print('Starting Portfolio Value: ' cerebro.broker.getvalue())
+    print('Starting Portfolio Value: ',  cerebro.broker.getvalue())
     plt.rcParams['figure.figsize']=[10,6]
     plt.rcParams["font.size"]="12"
 
@@ -395,25 +392,26 @@ def backtest():
     pnl = cerebro.broker.getvalue() - cash
     #cerebro.plot()
     # Print out the final result
-    print('Final Portfolio Value: ' cerebro.broker.getvalue()) 
+    print('Final Portfolio Value: ',  cerebro.broker.getvalue()) 
     
     return pnl, results[0]    
 
-#end of function for '{symbols}' with capital '{symbols}'
+#end of function for '{symbols}' with capital '{cash}'
            
-                '''.format(symbols=symbols, cash = cash)
+                '''.format(symbols=symbols, cash = cash, module = module)
 
     strategy_file=module+".py"
-    path = 
+    strategy_file = "SampleStrategies/"+strategy_file
+
     with open(strategy_file) as fp:
         data = fp.read()
     
     data += "\n"
     data += backtest_code
-
+    path_dir = "MyStrategies/"
     filename_save = filename+".py"
-  
-    with open (filename_save, 'w') as fp:
+    
+    with open (os.path.join(path_dir, filename_save), 'w') as fp:
         fp.write(data)
         
     return 0 
@@ -427,11 +425,12 @@ def backtest():
 def download_data(n_clicks, symbols ):
     if n_clicks == 0:
         return '' 
-    symbols = ['TSLA', 'GE']    
+    #symbols = ['TSLA', 'GE']    
     for s in symbols:
             df = yf.download(s, start = "2014-01-01", end = "2018-12-31")
+            data_dir = "Data/"
             filename = s +".csv"
-            df.to_csv(filename) 
+            df.to_csv(os.path.join(data_dir, filename)) 
     #return dcc.send_data_frame(df.to_csv, filename) 
     # module_name = "FromBackTrader"
     # module = importlib.import_module(module_name)

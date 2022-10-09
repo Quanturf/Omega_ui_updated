@@ -83,7 +83,7 @@ def params_list(module_name, strategy_name, symbol):
     return params
 
 
-def create_ts2():
+def create_ts2(strategy):
     result = []
     logger = logging.getLogger()
     logger.setLevel(logging.NOTSET)
@@ -106,7 +106,7 @@ def create_ts2():
         # for k, v in params.items():
         #     params[k] = json.loads(v)
 
-        module_name = "FromBackTrader"
+        module_name = "MyStrategies."+strategy
         module = importlib.import_module(module_name)
         pnl, strat = module.backtest()    
         # pnl, strat = backtest.run(symbols, cash, strategy, **params)
@@ -115,7 +115,7 @@ def create_ts2():
         result = json.dumps({
             'returns': returns.to_json(),
             'statistic': ots.create_statistic(returns,strat),
-            'title': '{}: {:,.2f}'.format(module_name, pnl)
+            'title': '{}: {:,.2f}'.format(strategy, pnl)
         })
         logger.log(logging.DEBUG, 'done')
     except Exception as e:

@@ -71,7 +71,7 @@ def backtest():
     #cerebro.adddata(data)
     # Backtest
 
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    print('Starting Portfolio Value: ', cerebro.broker.getvalue())
     plt.rcParams['figure.figsize']=[10,6]
     plt.rcParams["font.size"]="12"
     # Run over everything
@@ -79,7 +79,7 @@ def backtest():
     pnl = cerebro.broker.getvalue() - cash
     #cerebro.plot()
     # Print out the final result
-    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())    
+    print('Final Portfolio Value: ' , cerebro.broker.getvalue())    
 
     return pnl, results[0]
 

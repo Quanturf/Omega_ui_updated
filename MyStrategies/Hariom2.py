@@ -42,14 +42,13 @@ class TestStrategy(bt.Strategy):
                 self.log(logging.INFO, 'Sell @ {}'.format(self.dataclose[0]))
                 self.order_target_percent(target=-0.25)
                 
+
 def backtest():
-    #path_dir = os.path.dirname(os.path.realpath(__file__))
-    
-    cash = 100000
-    symbols = ['TSLA','GE']
+    cash = 10000
+    symbols = ['AAPL', 'TSLA', 'MSFT', 'AMZN']
     #start_date = '2018-01-01'
-    data_dir = "Data/"
-    
+    data_dir = "Data/"  
+
     cerebro = bt.Cerebro()
     cerebro.broker.setcash(cash)
 
@@ -57,9 +56,6 @@ def backtest():
             df = pd.read_csv(os.path.join(data_dir, s+".csv"), parse_dates=True, index_col=0)
             data = bt.feeds.PandasData(dataname=df)
             cerebro.adddata(data)
-    #data = bt.feeds.PandasData(dataname=yf.download('TSLA', '2018-01-01', '2018-01-10'))
-    #cerebro.adddata(data)
-
     # Strategy
     cerebro.addstrategy(TestStrategy)
 
@@ -68,20 +64,22 @@ def backtest():
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
     cerebro.addanalyzer(bt.analyzers.SQN, _name='SQN')
     cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='trades')
-    #cerebro.adddata(data)
-    # Backtest
-
-    #print('Starting Portfolio Value: '  cerebro.broker.getvalue())
+    
+    # Backtest 
+    
+    print('Starting Portfolio Value: ',  cerebro.broker.getvalue())
     plt.rcParams['figure.figsize']=[10,6]
     plt.rcParams["font.size"]="12"
+
     # Run over everything
     results = cerebro.run()
     pnl = cerebro.broker.getvalue() - cash
     #cerebro.plot()
     # Print out the final result
-    #print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())    
+    print('Final Portfolio Value: ',  cerebro.broker.getvalue()) 
+    
+    return pnl, results[0]    
 
-    return pnl, results[0]
-
-def test_results():
-    pnl, results[0] = backtest()
+#end of function for '['AAPL', 'TSLA', 'MSFT', 'AMZN']' with capital '10000'
+           
+                

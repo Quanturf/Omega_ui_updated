@@ -67,21 +67,21 @@ def create_figure(returns, title):
 
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    # hover = pivot_for_hm.values.astype(str)
-    # for x in range(len(pivot_for_hm.index)):
-    #     for y in range(len(months)):
-    #         hover[x][y] = '{} {}: {:,.2f}'.format(pivot_for_hm.index[x], months[y], pivot_for_hm.values[x][y])
+    hover = pivot_for_hm.values.astype(str)
+    for x in range(len(pivot_for_hm.index)):
+        for y in range(len(months)):
+            hover[x][y] = '{} {}: {:,.2f}'.format(pivot_for_hm.index[x], months[y], pivot_for_hm.values[x][y])
 
-    # heat_map = go.Heatmap(
-    #     z=pivot_for_hm.values.tolist(),
-    #     colorscale=custom_color_scale,
-    #     showscale=False,
-    #     x=months,
-    #     y=pivot_for_hm.index,
-    #     text=hover,
-    #     hoverinfo='text',
-    #     name=''
-    # )
+    heat_map = go.Heatmap(
+        z=pivot_for_hm.values.tolist(),
+        colorscale=custom_color_scale,
+        showscale=False,
+        x=months,
+        y=pivot_for_hm.index,
+        text=hover,
+        hoverinfo='text',
+        name=''
+    )
 
     annotations = []
     for n, row in enumerate(pivot_for_hm.values.tolist()):
@@ -124,12 +124,12 @@ def create_figure(returns, title):
     # place graphs
     fig.append_trace(drawdown, 1, 1)
     fig.append_trace(uw, 2, 1)
-    #fig.append_trace(heat_map, 3, 1)
+    fig.append_trace(heat_map, 3, 1)
     fig.append_trace(revenue_by_year, 3, 4)
 
     fig['layout'].update(
         autosize=False,
-        width=1000,
+        width=700,
         height=1200
     )
 
