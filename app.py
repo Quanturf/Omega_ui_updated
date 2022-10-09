@@ -6,6 +6,7 @@ import os
 import uuid
 import redis
 import importlib
+import pandas as pd
 
 import dash
 import dash.dependencies as dd
@@ -20,6 +21,7 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import yfinance as yf
 import subprocess
+import dash_bootstrap_components as dbc
 
 
 debug_mode = False  # set False to deploy
@@ -41,16 +43,136 @@ app.title = 'Omega - Backtest'
 level_marks = {0: 'Debug', 1: 'Info', 2: 'Warning', 3: 'Error'}
 num_marks = 4
 
+SIDEBAR_STYLE = {
+    'position': 'fixed',
+    'top': 54,
+    'left': 0,
+    'bottom': 0,
+    'width': '16rem',
+    'height': '100%',
+    'z-index': 1,
+    'overflow-x': 'hidden',
+    'transition': 'all 0.5s',
+    'padding': '0.5rem 1rem',
+    # 'background-color': SIDEBAR, 
+	# 'color': ACCENT,
+}
+
+navbar = dbc.NavbarSimple(
+    children=[
+        # dbc.DropdownMenu(
+        #     [
+        #         dbc.DropdownMenuItem(
+        #             "Top Stats", id="headline_stats_df", n_clicks=0
+        #         ),
+        #         dbc.DropdownMenuItem(
+        #             "Equity Timeseries", id="center_stock", n_clicks=0
+        #         ),
+        #         dbc.DropdownMenuItem(
+        #             "Cumulative Returns", id="cumulative_returns_plot", n_clicks=0
+        #         ),
+        #         dbc.DropdownMenuItem(
+        #             "Annual/monthly Returns", id="annual_monthly_returns_plot", n_clicks=0
+        #         ),
+        #         dbc.DropdownMenuItem(
+        #             "Rolling Sharpe", id="rolling_sharpe_plot", n_clicks=0
+        #         ),
+        #         dbc.DropdownMenuItem(
+        #             "Drawdown Underwater", id="drawdown_underwater_plot", n_clicks=0
+        #         ),
+                
+        #     ],
+        #     label="Download Data", toggle_style={"color": "white", "backgroundColor": ACCENT, "border":"0"}, style = {"margin-right": "5px"}
+        # ),
+    
+        # dcc.Download(id="download-headline-stats-csv"),
+        dcc.Download(id="download-center-stock-csv"),
+        # dcc.Download(id="download-cumulative-returns-csv"),
+        # dcc.Download(id="download-anual-monthly-returns-csv"),
+        # dcc.Download(id="download-rolling-sharpe-csv"),
+        # dcc.Download(id="download-drawdown-underwater-csv"),
+        # html.Br(),
+        dbc.Button('Download Data', id="center_stock", n_clicks=0, style = {"margin-right": "5px"}),
+        dbc.Button('See Code', id='open-modal', outline=True, className='mr-1', n_clicks=0, style = { "margin-right": "5px"}),  
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle('Python Code')),
+                dbc.ModalBody(dcc.Markdown(id='see-code-content')),
+            ],
+            id='modal-content',
+            size='lg',
+            is_open=False,
+            centered=True
+        ),
+        dbc.Button('Sidebar', outline=True, className='mr-1', id='btn_sidebar'),
+        
+    ],
+    sticky='top',
+    brand='Quanturf - backtesting',
+    id='navbar',
+    brand_href='#',
+    #color=SIDEBAR,
+    dark=True,
+    fluid=True,
+)
+
+sidebar = html.Div(
+    [
+        html.Br(),
+		
+        dbc.Nav(
+            [
+                html.Br(),
+                # dbc.DropdownMenu(label='Equities', children = [dbc.DropdownMenuItem('Visualizations', href='/equity-visuals', id='equity-visuals-link', className='nav-pills'), 
+                #                                                 dbc.DropdownMenuItem('Data', href='/backtesting', id='backtesting-link', className='nav-pills'),
+                #                                                 ]
+                #                 , menu_variant='dark', nav=True, group=True
+                # ),
+                dbc.NavLink('Home', href='/home', id='home-link', className='nav-pills'),
+                dbc.NavLink('Backtest', href='/backtest', id='backtest-link', className='nav-pills'),
+                dbc.NavLink('Contact Us', href='/contact-us', id='contact-us-link', className='nav-pills'),
+                # dbc.NavLink('Visualizations', href='/equity-visuals', id='equity-visuals-link', className='nav-pills'),
+                # dbc.NavLink('Crypto', href='/crypto', id='crypto-link', className='nav-pills'),
+                # dbc.NavLink('FX', href='/FX', id='FX-link', className='nav-pills'),
+                # dbc.NavLink('Fixed Income', href='/fixed-income', id='fixed-income-link', className='nav-pills'),
+                # dbc.NavLink('Commodities', href='/commodities', id='commodities-link', className='nav-pills'),
+                # dbc.NavLink('Sentiment', href='/sentiment', id='sentiment-link', className='nav-pills'),
+                html.Br(),
+                
+                html.Br()  
+            ],
+            vertical=True,
+            pills=True
+            
+        ),
+    ],
+    id='sidebar',
+    style=SIDEBAR_STYLE,
+)
+
 left_column = html.Div([
+    html.Div(html.H5('Data Download'), className='black-block2 mb-10'),
     html.Div([
         html.Div('Symbols:', className='four columns'),
         dcc.Dropdown(
-            id='symbols',
-            #options=[{'label': name, 'value': name} for name in ob.backtest.get_symbols()],
-            options=['AAPL', 'TSLA', 'MSFT', 'AMZN'], #Replace this with list
+            id='symbols',            
+            options=[{'label': name, 'value': name} for name in pd.read_csv('static/sp500_companies.csv')['Symbol'].to_list()],
+            #options=['AAPL', 'TSLA', 'MSFT', 'AMZN'], #Replace this with list
             multi=True,
             className='eight columns u-pull-right')
     ], className='row mb-10'),
+
+
+    html.Button('Download', id='download-btn', n_clicks=0, style={'width': '60%', 'margin-left': 0, 'margin-right': '2%'}),
+                    
+
+    
+    html.Br(),
+
+    dbc.Row([
+            html.Div(html.Hr(style={'borderWidth': "0.3vh", "width": "100%", "color": "#FEC700"}))
+        ]),
+    html.Div(html.H5('Generate Algorithm Code'), className='black-block2 mb-10'),
     html.Div([
         html.Div('Algos:', className='four columns'),
         dcc.Dropdown(id='module', options=[], className='eight columns u-pull-right')
@@ -62,14 +184,23 @@ left_column = html.Div([
     html.Div([
         html.Div('Strategy Name:', className='four columns'),
         #dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-        dcc.Input(id='filename', className='eight columns u-pull-right')
+        dcc.Input(id='filename', className='eight columns u-pull-right', value = "MyStrategy")
     ], className='row mb-10'),
 
     html.Div([
         html.Div('Capital:', className='four columns'),
         #dcc.Dropdown(id='strategy', options=[], className='eight columns u-pull-right')
-        dcc.Input(id='cash', className='eight columns u-pull-right')
+        dcc.Input(id='cash', className='eight columns u-pull-right', value = 10000)
     ], className='row mb-10'),
+
+    html.Button('Generate Code', id='save-btn', n_clicks=0, style={'width': '60%', 'margin-left': 0, 'margin-right': '2%'}),
+
+    html.Br(),
+    dbc.Row([
+            html.Div(html.Hr(style={'borderWidth': "0.3vh", "width": "100%", "color": "#FEC700"}))
+        ]),
+
+    html.Div(html.H5('Run Backtest'), className='black-block2 mb-10'),    
 
     html.Div([
         html.Div('Backtest:', className='four columns'),
@@ -79,6 +210,8 @@ left_column = html.Div([
         #     options=[{'label': name, 'value': name} for name in oc.cfg['backtest']['modules'].split(',')],
         #     className='eight columns u-pull-right')
     ], className='row mb-10'),
+
+    html.Button('Run Backtest', id='backtest-btn', n_clicks=0, style={'width': '60%', 'margin-left': 0, 'margin-right': '0%'}),
     # html.Div(
     #     dash_table.DataTable(
     #         row_selectable=ob.cash_param(),
@@ -92,7 +225,7 @@ left_column = html.Div([
     #     html.Div('Notes:'),
     #     html.Textarea(id='notes-area', style={'width': '100%'})
     # ], className='row', style={'vertical-align': 'bottom'}),
-], className="three columns gray-block", style={'position': 'absolute', 'top': 0, 'bottom': '123px'})
+], className="three columns gray-block", style={'position': 'absolute'})
 
 center = html.Div([
     html.Div([
@@ -105,10 +238,11 @@ right_column = html.Div([
     html.Div(
         html.Div([
             html.Div([
+                html.Div(html.H5('Status'), className='black-block2 mb-10'),  
                 html.Div([
-                    html.Button('Download', id='download-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
-                    html.Button('AutoCode', id='save-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
-                    html.Button('Backtest', id='backtest-btn', n_clicks=0, style={'width': '34%', 'margin-left': 0, 'margin-right': '0%'}),
+                    #html.Button('Download', id='download-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
+                    #html.Button('AutoCode', id='save-btn', n_clicks=0, style={'width': '30%', 'margin-left': 0, 'margin-right': '2%'}),
+                    #html.Button('Backtest', id='backtest-btn', n_clicks=0, style={'width': '34%', 'margin-left': 0, 'margin-right': '0%'}),
                                         
                 ]),
                 html.Div(id='status-area', style={
@@ -120,7 +254,7 @@ right_column = html.Div([
                 })
             ], className='gray-block mb-10'),
             html.Div(id='stat-block', className='block',
-                    style={'position': 'absolute', 'top': '155px', 'bottom': '9.2em', 'left': '75.75%', 'right': 0}),
+                    style={'position': 'absolute', 'top': '155px', 'left': '75.75%', 'right': 0}),
         ], className='twelve columns'), className='row'),
 ], className='offset-by-nine three columns')
 
@@ -149,26 +283,34 @@ bottom = html.Div([
 ], className='gray-block')
 
 
-app.layout = html.Div([    
-    html.Div(
-        html.Div(html.H1('Quanturf - backtrader'), className='black-block2 mb-10'),
-        style={'position': 'absolute', 'right': '1em', 'width': '99%'}),
-    html.Div([
-        html.Div([
-            left_column, center, right_column
-        ], className='row', style={'position': 'absolute', 'bottom': '18em', 'top': '7em', 'right': '1em', 'width': '99%'}),
-        # html.Div(
-        #     bottom
-        #     , className='row', style={'position': 'absolute', 'bottom': '0.5em', 'right': '1em', 'width': '99%'})
-    ]),
-    html.Div(id='intermediate-value', style={'display': 'none'}),
-    html.Div(id='intermediate-params', style={'display': 'none'}),
-    html.Div(id='code-generated', style={'display': 'none'}),
-    html.Div(id='code-generated2', style={'display': 'none'}),
-    dcc.Download(id="download-data-csv"),
-    html.Div(id='intermediate-status', style={'display': 'none'}),
-    html.Div(id='level-log', contentEditable='True', style={'display': 'none'}),
-    dcc.Input(id='log-uid', type='text', style={'display': 'none'})
+app.layout = html.Div([ 
+        html.Div(
+                    [
+                        html.Div(
+                html.Div(html.H1('Quanturf - backtrader'), className='black-block2 mb-10'),
+                style={'position': 'absolute', 'right': '1em', 'width': '99%'}),
+            html.Div([
+                html.Div([
+                    left_column, center, right_column
+                ], className='row', style={'position': 'absolute', 'bottom': '18em', 'top': '7em', 'right': '1em', 'width': '99%'}),
+                # html.Div(
+                #     bottom
+                #     , className='row', style={'position': 'absolute', 'bottom': '0.5em', 'right': '1em', 'width': '99%'})
+            ]),
+            html.Div(id='intermediate-value', style={'display': 'none'}),
+            html.Div(id='intermediate-params', style={'display': 'none'}),
+            html.Div(id='code-generated', style={'display': 'none'}),
+            html.Div(id='code-generated2', style={'display': 'none'}),
+            dcc.Download(id="download-data-csv"),
+            html.Div(id='intermediate-status', style={'display': 'none'}),
+            html.Div(id='level-log', contentEditable='True', style={'display': 'none'}),
+            dcc.Input(id='log-uid', type='text', style={'display': 'none'})
+            
+        ], style={'height': '90vh', 'width': '90vw'}
+    ),
+        
+         
+    
 ])
 
 
@@ -192,9 +334,9 @@ def serve_file(file):
 
 @app.callback(dd.Output('module', 'options'), [dd.Input('symbols', 'value')])
 def update_algo_list(symbols):  
-    all_files = os.listdir("D:/Python/OmegaUI_codeGenerator/omega_ui/SampleStrategies")    
+    all_files = os.listdir("SampleStrategies")    
     algo_files = list(filter(lambda f: f.endswith('.py'), all_files))
-    algo_avlb = [s.strip('.py') for s in algo_files]    
+    algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]    
     return algo_avlb
 
 # @app.callback(dd.Output('strategy', 'options'), [dd.Input('module', 'value')])
@@ -204,9 +346,9 @@ def update_algo_list(symbols):
 
 @app.callback(dd.Output('strategy', 'options'), [dd.Input('symbols', 'value')])
 def update_strategy_list(symbols):  
-    all_files = os.listdir("D:/Python/OmegaUI_codeGenerator/omega_ui/MyStrategies")    
+    all_files = os.listdir("MyStrategies")    
     backtest_files = list(filter(lambda f: f.endswith('.py'), all_files))
-    backtest_avlb = [s.strip('.py') for s in backtest_files]    
+    backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in backtest_files]   
     return backtest_avlb
 
 
@@ -427,7 +569,7 @@ def download_data(n_clicks, symbols ):
         return '' 
     #symbols = ['TSLA', 'GE']    
     for s in symbols:
-            df = yf.download(s, start = "2014-01-01", end = "2018-12-31")
+            df = yf.download(s, start = "2018-01-01")
             data_dir = "Data/"
             filename = s +".csv"
             df.to_csv(os.path.join(data_dir, filename)) 
