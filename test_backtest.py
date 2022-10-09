@@ -82,12 +82,12 @@ class TestStrategy(bt.Strategy):
                 self.order_target_percent(target=-0.25)
 
 
-class RunBacktest():
-    # def get_symbols(self):
-    #     return ['AAPL', 'MSFT', 'TestData']
+class ExampleBacktest(ob.Backtest):
+    def get_symbols(self):
+        return ['AAPL', 'MSFT', 'TestData']
 
-    # def get_parameters(self, strategy, symbols):
-    #     return {'param1': 10, 'param2': 20}
+    def get_parameters(self, strategy, symbols):
+        return {'param1': 10, 'param2': 20}
 
     def run(self, symbols, cash, strategy, **params):
         path_dir = os.path.dirname(os.path.realpath(__file__))
