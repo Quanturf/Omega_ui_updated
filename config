@@ -1,0 +1,11 @@
+default:
+  module: omega_ui.test_backtest
+  redis: 127.0.0.1
+  class: RunBacktest
+  
+logging:
+  root: 'Temp/Logs'
+
+backtest:
+  cash: 100000.0
+  modules: omega_ui.test_backtest
