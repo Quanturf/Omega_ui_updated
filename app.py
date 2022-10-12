@@ -1,4 +1,6 @@
 from re import S
+import re
+from turtle import onclick
 import flask
 import json
 import logging
@@ -15,8 +17,10 @@ from dash import dcc, html, dash_table
 # from dash import html
 import dash.dash_table as dtb
 
-import omega_ui.configuration as oc
-import omega_ui.backend as ob
+import backend as ob
+import configuration as oc
+#import omega_ui.configuration as oc
+#import omega_ui.backend as ob
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import yfinance as yf
@@ -32,9 +36,31 @@ jss = ['script.js']
 static_route = '/static/'
 
 
-app = dash.Dash(__name__, external_stylesheets=['static/stylesheet.css'])
+
+
+# app = dash.Dash(__name__, external_stylesheets=[
+#     'static/stylesheet.css',
+#     ], 
+#     external_scripts=[
+#         'static/scripts.js'
+#     ])
+# for stylesheet in stylesheets:
+#     app.css.append_css({"external_url": "/static/{}".format(stylesheet)})
+
+# app.scripts.append_script({"external_url": "//code.jquery.com/jquery-1.4.2.min.js"})
+# app.scripts.append_script({"external_url": "//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"})
+
+
+# for js in jss:
+#     app.scripts.append_script({"external_url": "/static/{}".format(js)})
 
 #app = dash.Dash(__name__)
+
+app = dash.Dash(__name__, external_scripts=[
+    'code.jquery.com/jquery-1.4.2.min.js',
+    'cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js'
+])
+
 server = app.server
 app.title = 'Quanturf - Backtest'
 #app.scripts.config.serve_locally = False
@@ -207,15 +233,15 @@ app.layout = html.Div([
 ])
 
 
-for stylesheet in stylesheets:
-    app.css.append_css({"external_url": "/static/{}".format(stylesheet)})
+# for stylesheet in stylesheets:
+#     app.css.append_css({"external_url": "/static/{}".format(stylesheet)})
 
-app.scripts.append_script({"external_url": "//code.jquery.com/jquery-1.4.2.min.js"})
-app.scripts.append_script({"external_url": "//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"})
+# app.scripts.append_script({"external_url": "//code.jquery.com/jquery-1.4.2.min.js"})
+# app.scripts.append_script({"external_url": "//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"})
 
 
-for js in jss:
-    app.scripts.append_script({"external_url": "/static/{}".format(js)})
+# for js in jss:
+#     app.scripts.append_script({"external_url": "/static/{}".format(js)})
 
 
 @app.server.route('{}<file>'.format(static_route))
@@ -227,9 +253,10 @@ def serve_file(file):
 
 @app.callback(dd.Output('module', 'options'), [dd.Input('symbols', 'value')])
 def update_algo_list(symbols):  
-    all_files = os.listdir("SampleStrategies")    
+    all_files = os.listdir("SampleStrategies") 
     algo_files = list(filter(lambda f: f.endswith('.py'), all_files))
-    algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]    
+    algo_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in algo_files]
+    #print(algo_avlb)    
     return algo_avlb
 
 # @app.callback(dd.Output('strategy', 'options'), [dd.Input('module', 'value')])
@@ -241,19 +268,23 @@ def update_algo_list(symbols):
 def update_strategy_list(symbols):  
     all_files = os.listdir("MyStrategies")    
     backtest_files = list(filter(lambda f: f.endswith('.py'), all_files))
-    backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in backtest_files]   
+    backtest_avlb = [s.rsplit( ".", 1 )[ 0 ] for s in backtest_files]  
+    #print(backtest_avlb) 
     return backtest_avlb
 
+# I think this callback is not needed. No html tag with id = 'params-table' is there
+# Commenting out it for now.
 
-@app.callback(dd.Output('params-table', 'columns'), [dd.Input('module', 'value'), dd.Input('strategy', 'value'), dd.Input('symbols', 'value')])
-def update_params_list(module_name, strategy_name, symbol):
-    return ob.params_list(module_name, strategy_name, symbol)
+# @app.callback(dd.Output('params-table', 'columns'), [dd.Input('module', 'value'), dd.Input('strategy', 'value'), dd.Input('symbols', 'value')])
+# def update_params_list(module_name, strategy_name, symbol):
+#     return ob.params_list(module_name, strategy_name, symbol)
 
 
 @app.callback(dd.Output('strategy', 'value'), [dd.Input('strategy', 'options')])
 def update_strategy_value(options):
     if len(options):
-        return options[0]['value']
+        #print(options)
+        return options[0]
     return ''
 
 
@@ -292,6 +323,8 @@ def update_strategy_value(options):
 #     return "Backtesting.."
 
 
+ ####  Run Backtest button #####
+ 
 @app.callback(dd.Output('status-area', 'children'),
               [
                   dd.Input('backtest-btn', 'n_clicks'),
@@ -311,20 +344,24 @@ def update_status_area(n_clicks, strategy, result):
     return "Backtesting.."    
 
 
-@app.callback(dd.Output('log-uid', 'value'), [dd.Input('symbols', 'options')])
+@app.callback(dd.Output('log-uid', 'value'), [dd.Input('symbols', 'options')]) #Why do we need this???
 def create_uid(m):
     return uuid.uuid4().hex
 
 
-@app.callback(dd.Output('intermediate-value', 'children'), [dd.Input('strategy', 'value')])
-def on_click_backtest_to_intermediate(strategy):
+@app.callback(dd.Output('intermediate-value', 'children'), [dd.Input('strategy', 'value'),dd.Input('backtest-btn', 'n_clicks')])
+def on_click_backtest_to_intermediate(strategy, n_clicks):
     try:
         if strategy is None:
             return []
         #return ob.create_ts(uid, module, strategy, symbols, params)
-        return ob.create_ts2(strategy)
+        result = ob.create_ts2(strategy)
+        print("result of backtesting....")
+        print(result)
+        return result
     except json.decoder.JSONDecodeError:
         # Ignoring this error (this is happening when inputting values in Module/Strategy boxes)
+        print("Exception throw ho gya")
         return []    
 
 
@@ -376,6 +413,9 @@ def reset_button(*args):
 #     params['table_params'] = table_params
 #     return json.dumps(params)
 
+
+
+######   Code generate Button  #####
 
 #Add code later to make sure that enter cash and symbols
 @app.callback(dd.Output('code-generated', 'children'),
@@ -451,6 +491,7 @@ def backtest():
         
     return 0 
 
+#####  Download Button #####
 
 @app.callback(dd.Output('code-generated2', 'children'),
               [
@@ -460,7 +501,9 @@ def backtest():
 def download_data(n_clicks, symbols ):
     if n_clicks == 0:
         return '' 
-    #symbols = ['TSLA', 'GE']    
+    #symbols = ['TSLA', 'GE']
+    print("testing Datas ") 
+    print(symbols)   
     for s in symbols:
             df = yf.download(s, start = "2018-01-01")
             data_dir = "Data/"
@@ -484,16 +527,17 @@ def on_intermediate_to_chart(children, uid):
         return dash.no_update
     return ob.extract_figure(children)
 
+#Commenting it out for now as there is no level-slider exist.
 
-@app.callback(
-    dash.dependencies.Output('level-log', 'children'),
-    [dash.dependencies.Input('level-slider', 'value')])
-def level_output(value):
-    begin, end = value
-    res = []
-    for i in range(begin, end+1):
-        res.append(level_marks[i].upper())
-    return ','.join(res)
+# @app.callback(
+#     dash.dependencies.Output('level-log', 'children'),
+#     [dash.dependencies.Input('level-slider', 'value')])
+# def level_output(value):
+#     begin, end = value
+#     res = []
+#     for i in range(begin, end+1):
+#         res.append(level_marks[i].upper())
+#     return ','.join(res)
 
 
 @app.callback(dd.Output('stat-block', 'children'), [dd.Input('intermediate-value', 'children')])
