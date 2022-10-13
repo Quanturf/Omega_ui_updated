@@ -1,4 +1,5 @@
 import glob
+#import imp
 import importlib
 import inspect
 import json
@@ -9,8 +10,10 @@ import re
 import rlog
 import sys
 
-import omega_ui.configuration as oc
-import omega_ui.tearsheet as ots
+import configuration as oc
+import tearsheet as ots
+# import omega_ui.configuration as oc
+# import omega_ui.tearsheet as ots
 from importlib.machinery import SourceFileLoader
 
 
@@ -108,7 +111,7 @@ def create_ts2(strategy):
 
         module_name = "MyStrategies."+strategy
         module = importlib.import_module(module_name)
-        pnl, strat = module.backtest()    
+        pnl, strat = module.backtest() #Check for the issues??    
         # pnl, strat = backtest.run(symbols, cash, strategy, **params)
         pyfoliozer = strat.analyzers.getbyname('pyfolio')
         returns, _, _, _ = pyfoliozer.get_pf_items()

@@ -1,3 +1,7 @@
+function handleDownload(){
+    alert("download starting");
+}
+
 function onElementInserted(containerSelector, elementSelector, callback) {
 
     var onMutationsObserved = function(mutations) {

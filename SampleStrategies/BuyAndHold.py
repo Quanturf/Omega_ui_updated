@@ -1,4 +1,4 @@
-from . import BaseStrategy as base
+import BaseStrategy as base
 
 
 class BuyAndHold(base.Strategy):
