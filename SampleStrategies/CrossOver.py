@@ -1,15 +1,18 @@
 import backtrader as bt
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
+#base.Strategy
 
-from . import BaseStrategy as base
-
-
-class CrossOver(base.Strategy):
+class CrossOver(Strategy):
     params = {
         'target_percent': 0.95
     }
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
 
         # Define Indicators
         self.sma5 = bt.indicators.MovingAverageSimple(period=5)

@@ -57,8 +57,8 @@ static_route = '/static/'
 #app = dash.Dash(__name__)
 
 app = dash.Dash(__name__, external_scripts=[
-    'code.jquery.com/jquery-1.4.2.min.js',
-    'cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js'
+    'https://code.jquery.com/jquery-1.4.2.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js'
 ])
 
 server = app.server
@@ -212,20 +212,20 @@ app.layout = html.Div([
                 html.Div([
                     left_column, center, right_column
                 ], className='row', style={'position': 'absolute', 'bottom': '18em', 'top': '7em', 'right': '1em', 'width': '99%'}),
-                # html.Div(
-                #     bottom
-                #     , className='row', style={'position': 'absolute', 'bottom': '0.5em', 'right': '1em', 'width': '99%'})
+                html.Div(
+                    bottom
+                    , className='row', style={'position': 'fixed', 'bottom': '0','right': '1em', 'width': '99%'})
             ]),
             html.Div(id='intermediate-value', style={'display': 'none'}),
-            html.Div(id='intermediate-params', style={'display': 'none'}),
+            #html.Div(id='intermediate-params', style={'display': 'none'}),
             html.Div(id='code-generated', style={'display': 'none'}),
             html.Div(id='code-generated2', style={'display': 'none'}),
-            dcc.Download(id="download-data-csv"),
-            html.Div(id='intermediate-status', style={'display': 'none'}),
+            #dcc.Download(id="download-data-csv"),
+            #html.Div(id='intermediate-status', style={'display': 'none'}),
             html.Div(id='level-log', contentEditable='True', style={'display': 'none'}),
             dcc.Input(id='log-uid', type='text', style={'display': 'none'})
             
-        ], style={'height': '90vh', 'width': '90vw'}
+        ], style={'height': '200vh', 'width': '90vw'}
     ),
         
          
@@ -280,12 +280,12 @@ def update_strategy_list(symbols):
 #     return ob.params_list(module_name, strategy_name, symbol)
 
 
-@app.callback(dd.Output('strategy', 'value'), [dd.Input('strategy', 'options')])
-def update_strategy_value(options):
-    if len(options):
-        #print(options)
-        return options[0]
-    return ''
+# @app.callback(dd.Output('strategy', 'value'), [dd.Input('strategy', 'options')])
+# def update_strategy_value(options):
+#     if len(options):
+#         #print(options)
+#         return options[5]
+#     return ''
 
 
 # @app.callback(dd.Output('status-area', 'children'),
@@ -356,8 +356,8 @@ def on_click_backtest_to_intermediate(strategy, n_clicks):
             return []
         #return ob.create_ts(uid, module, strategy, symbols, params)
         result = ob.create_ts2(strategy)
-        print("result of backtesting....")
-        print(result)
+        #print("result of backtesting....")
+        #print(result)
         return result
     except json.decoder.JSONDecodeError:
         # Ignoring this error (this is happening when inputting values in Module/Strategy boxes)
@@ -431,7 +431,7 @@ def create_code(n_clicks, cash, module, symbols, filename):
         return '' 
 
     data = data2 = ""
-    
+
     backtest_code = '''                
 
 def backtest():
@@ -443,13 +443,12 @@ def backtest():
     cerebro = bt.Cerebro()
     cerebro.broker.setcash(cash)
 
-    for s in symbols:            
-            df = pd.read_csv(os.path.join(data_dir, s+".csv"), parse_dates=True, index_col=0)
-            data = bt.feeds.PandasData(dataname=df)
-            cerebro.adddata(data)
+    for s in symbols:
+        data = bt.feeds.PandasData(dataname=yf.download(s, '2021-07-06', '2022-07-01', auto_adjust=True))
+        cerebro.adddata(data)
+
     # Strategy
     cerebro.addstrategy({module})
-
 
     cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
@@ -474,15 +473,18 @@ def backtest():
 #end of function for '{symbols}' with capital '{cash}'
            
                 '''.format(symbols=symbols, cash = cash, module = module)
+    
+    #print("backtest_code : " + backtest_code)
 
-    strategy_file=module+".py"
+    strategy_file = module+".py"
     strategy_file = "SampleStrategies/"+strategy_file
 
     with open(strategy_file) as fp:
         data = fp.read()
-    
+
     data += "\n"
     data += backtest_code
+    #print("Data: " + data)
     path_dir = "MyStrategies/"
     filename_save = filename+".py"
     

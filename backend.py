@@ -44,7 +44,7 @@ class LogFileCreator:
             self.counter = 1
 
     def next_file_name(self):
-        self.counter += 1
+        #self.counter += 1
         return os.path.join(log_dir, 'backtest{:03d}-logs.txt'.format(self.counter))
 
     @staticmethod
@@ -96,8 +96,8 @@ def create_ts2(strategy):
     fh.setFormatter(formatter)
     fh.setLevel(logging.NOTSET)
     logger.addHandler(fh)
-    # rh = rlog.RedisHandler(channel='l' + uid)
-    # logger.addHandler(rh)
+    rh = rlog.RedisHandler(channel='sandeep')
+    logger.addHandler(rh)
     logger.log(logging.DEBUG, 'start')
     try:
         # Get strategy
@@ -108,10 +108,14 @@ def create_ts2(strategy):
         # cash = float(params.pop('Cash', 1))
         # for k, v in params.items():
         #     params[k] = json.loads(v)
-
+        
         module_name = "MyStrategies."+strategy
+        # print(module_name)
         module = importlib.import_module(module_name)
+        print("Module Import Success:...")
+        # print(module)
         pnl, strat = module.backtest() #Check for the issues??    
+        print("Back test run Successful:....")
         # pnl, strat = backtest.run(symbols, cash, strategy, **params)
         pyfoliozer = strat.analyzers.getbyname('pyfolio')
         returns, _, _, _ = pyfoliozer.get_pf_items()
@@ -122,6 +126,9 @@ def create_ts2(strategy):
         })
         logger.log(logging.DEBUG, 'done')
     except Exception as e:
+        print("Exception Throw")
+        print(e)
+        print("         *******************             ")
         logger.log(logging.ERROR, 'Error in starting a backtest: {}'.format(str(e)))
     logger.removeHandler(fh)
     #logger.removeHandler(rh)
@@ -182,7 +189,6 @@ def extract_figure(json_ts):
         df_r = pd.read_json(ts['returns'], typ='series').rename('return')
         fig = ots.create_figure(df_r, ts['title'])
         fig['layout'].update(autosize=True)
-
         return fig
     except:
         return []
