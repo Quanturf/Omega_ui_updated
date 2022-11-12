@@ -21,7 +21,7 @@ def create_figure(returns, title):
     df['month'] = df.index.month
 
     # plot drawdown
-    df_cum_rets = ep.cum_returns(returns, starting_value=1.0)
+    df_cum_rets = ep.cum_returns(returns, starting_value=1.0) #this line throws an error in meanrevision strategy..
     drawdown = go.Scatter(
         x=df_cum_rets.index,
         y=df_cum_rets,
@@ -151,6 +151,11 @@ def create_figure(returns, title):
 
     return fig
 
+def checkKey(dic, key1, key2):
+    if key1 in dic.keys():
+        return dic[key1][key2]
+    else:
+        return 1
 
 def create_statistic(returns, results):
     """
@@ -164,6 +169,7 @@ def create_statistic(returns, results):
     df = returns.to_frame()
     df['year'] = df.index.year
     df['month'] = df.index.month
+
     # Analysis
     sqn_analysis = results.analyzers.SQN.get_analysis()
     dd_analysis = results.analyzers.drawdown.get_analysis()
@@ -171,7 +177,7 @@ def create_statistic(returns, results):
     df_cum_rets = ep.cum_returns(returns, starting_value=1.0)
     returns_by_month = df.groupby(['year', 'month'])['return'].sum()
     df_rby = df.groupby(['year'])[['return']].sum().apply(lambda x: x * 100)
-    return dict(
+    tearsheet_result = dict(
         Curve={
             'Total Return': round((df_cum_rets.iloc[-1] - 1) * 100, 2),
             'CAGR': round(ep.cagr(returns) * 100, 2),
@@ -184,15 +190,15 @@ def create_statistic(returns, results):
             'Trades Per Year': 0  # TODO
         },
         Trade={
-            'Trade Winning %': round(trades['won']['total'] / trades['total']['total'] * 100, 2),
-            'Average Trade': round(trades['pnl']['net']['average'], 2),
-            'Average Win': round(trades['won']['pnl']['average'], 2),
-            'Average Loss': round(trades['lost']['pnl']['average'], 2),
-            'Best Trade': round(trades['won']['pnl']['max'], 2),
-            'Worst Trade': round(trades['lost']['pnl']['max'], 2),
+            'Trade Winning %': round(checkKey(trades, 'won', 'total') / checkKey(trades, 'total', 'total') * 100, 2),
+            'Average Trade': round(checkKey(trades, 'pnl', 'net'), 2),
+            'Average Win': round(checkKey(trades, 'won', 'pnl'), 2),
+            'Average Loss': round(checkKey(trades, 'lost', 'pnl'), 2),
+            'Best Trade': round(checkKey(trades, 'won', 'pnl'), 2),
+            'Worst Trade': round(checkKey(trades, 'lost', 'pnl'), 2),
             'Worst Trade Date': 0,  # TODO
-            'Avg Days in Trade': round(trades['len']['average'], 2),
-            'Trades': trades['total']['total']
+            'Avg Days in Trade': round(checkKey(trades, 'len', 'average'), 2),
+            'Trades': checkKey(trades, 'total', 'total')
         },
         Time={
             'Winning Months %': round(len(returns_by_month.loc[lambda x: x > 0]) / len(returns_by_month.index) * 100, 2),
@@ -205,6 +211,7 @@ def create_statistic(returns, results):
             'Worst Year %': round(df_rby.min()['return'], 2),
         }
     )
+    return tearsheet_result
 
 
 def create_tearsheet(results, title):

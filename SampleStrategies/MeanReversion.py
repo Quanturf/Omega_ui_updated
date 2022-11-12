@@ -1,9 +1,13 @@
-import pandas as pd
 import numpy as np
-from . import BaseStrategy as base
+import backtrader as bt
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
 
-class MeanReversion(base.Strategy):
+class MeanReversion(Strategy):
     params = {
         'target_percent': 0.95,
         'riskfreerate': 0,
@@ -18,7 +22,7 @@ class MeanReversion(base.Strategy):
     }
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
         self.count = 1
         self.rank = pd.Series()
         self.filter = []

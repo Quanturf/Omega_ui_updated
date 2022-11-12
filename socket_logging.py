@@ -4,7 +4,7 @@ import flask_socketio as fsio
 import json
 import redis
 
-import omega_ui.configuration as oc
+import configuration as oc
 
 eventlet.monkey_patch()
 pool = eventlet.GreenPool(1000)  # number of available connections
@@ -20,7 +20,7 @@ def background_thread(uid_with_size):
     r = redis.StrictRedis(oc.cfg['default']['redis'], 6379, db=0)
     r.set(uid+'size', size)
     pubsub = r.pubsub()
-    pubsub.subscribe('l'+uid)
+    pubsub.subscribe('sandeep')
     count = 0
     for message in pubsub.listen():
         # Filter out events like Redis connections.
@@ -55,4 +55,4 @@ def disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(s_app, host='0.0.0.0', debug=True)
+    socketio.run(s_app, host='127.0.0.1', port=5001, debug=True)

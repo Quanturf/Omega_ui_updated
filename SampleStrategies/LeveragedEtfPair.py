@@ -1,9 +1,13 @@
 import numpy as np
+import backtrader as bt
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
-from . import BaseStrategy as base
 
-
-class LeveragedEtfPair(base.Strategy):
+class LeveragedEtfPair(Strategy):
     """
     Use as data two oposing weighted ETFs, ex: SSO & SDS
 
@@ -17,7 +21,7 @@ class LeveragedEtfPair(base.Strategy):
     }
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
         assert len(self.datas) == 2, "Exactly 2 datafeeds needed for this strategy!"
 
         self.leverages = np.abs(self.params.leverages)

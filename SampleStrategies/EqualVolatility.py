@@ -1,10 +1,13 @@
 import numpy as np
+import backtrader as bt
 import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
-from . import BaseStrategy as base
 
-
-class EqualVolatility(base.Strategy):
+class EqualVolatility(Strategy):
     """
     Given a set of equities, balance volatilities monthly.
     """
@@ -16,7 +19,7 @@ class EqualVolatility(base.Strategy):
     }
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
 
     def rebalance(self):
         vols = []

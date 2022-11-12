@@ -1,15 +1,20 @@
-from . import BaseStrategy as base
+
 import numpy as np
+import backtrader as bt
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
-
-class WeightedHold(base.Strategy):
+class WeightedHold(Strategy):
     params = (
         ('kwargs', None),
         ('target_percent', 0.99),
     )
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
 
         if self.params.kwargs:
             self.params.weights = [float(w) for w in self.params.kwargs]

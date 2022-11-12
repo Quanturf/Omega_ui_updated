@@ -1,10 +1,11 @@
 import logging
-import os
-import pandas as pd
-
+import numpy as np
 import backtrader as bt
-import yfinance as yf
+import pandas as pd
+import os
 import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
 
 class TestStrategy(bt.Strategy):

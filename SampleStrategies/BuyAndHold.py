@@ -1,13 +1,18 @@
-import BaseStrategy as base
+import backtrader as bt
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
 
-class BuyAndHold(base.Strategy):
+class BuyAndHold(Strategy):
     params = (
         ('target_percent', 0.99),
     )
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
 
     def buy_and_hold(self):
         for d in self.datas:

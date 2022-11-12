@@ -1,6 +1,16 @@
-function handleDownload(){
-    alert("download starting");
-}
+
+// handle socket connection
+socket = io();
+socket.connect(); // here goes the url of server side to which you want to connect client side to
+
+socket.on('connect', function(){
+    socket.send("a");
+})
+
+socket.on('message', function(msg){
+    console.log(msg);
+    socket.send("a");
+})
 
 function onElementInserted(containerSelector, elementSelector, callback) {
 

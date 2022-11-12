@@ -1,10 +1,13 @@
 # Import the backtrader platform
 import numpy as np
+import backtrader as bt
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+import yfinance as yf
+from .BaseStrategy import *
 
-from . import BaseStrategy as base
-
-
-class PairSwitching(base.Strategy):
+class PairSwitching(Strategy):
     """
     Use as data two oposing equities or ETFs
 
@@ -18,7 +21,7 @@ class PairSwitching(base.Strategy):
     }
 
     def __init__(self):
-        base.Strategy.__init__(self)
+        Strategy.__init__(self)
         assert len(self.datas) == 2, "Exactly 2 datafeeds needed for this strategy!"
 
     def switch(self):
